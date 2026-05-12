@@ -1,0 +1,44 @@
+{% extends 'hostel/base.html' %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <a href="{% url 'poll_list' %}" class="btn btn-outline-secondary btn-sm mb-3">
+            <i class="bi bi-arrow-left"></i> Back to Polls
+        </a>
+        <h2><i class="bi bi-pencil-square"></i> Create Tenant Poll</h2>
+        <p class="text-muted">Create a poll that admins can vote on.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Title *</label>
+                        {{ form.title }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        {{ form.description }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Options *</label>
+                        {{ form.options }}
+                        <div class="form-text">Enter one option per line.</div>
+                    </div>
+                    <div class="form-check mb-3">
+                        {{ form.active }}
+                        <label class="form-check-label">Active</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Create Poll
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

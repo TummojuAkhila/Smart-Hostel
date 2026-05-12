@@ -1,0 +1,67 @@
+{% extends 'hostel/base.html' %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+        <div>
+            <h2><i class="bi bi-bar-chart-line"></i> Active Polls</h2>
+            <p class="text-muted">Vote in current polls and see the latest hostel decisions.</p>
+        </div>
+        {% if not user.is_staff %}
+            <a href="{% url 'create_poll' %}" class="btn btn-success align-self-center">
+                <i class="bi bi-plus-circle"></i> Create Tenant Poll
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    {% if polls %}
+        {% for poll in polls %}
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h5 class="card-title mb-1">{{ poll.title }}</h5>
+                                <p class="mb-2 text-muted small">{{ poll.description|truncatewords:18 }}</p>
+                            </div>
+                            <span class="badge bg-{{ poll.is_admin_poll|yesno:'success,primary' }}">
+                                {% if poll.is_admin_poll %}
+                                    Admin Poll
+                                {% else %}
+                                    Tenant Poll
+                                {% endif %}
+                            </span>
+                        </div>
+                        <p class="mb-3 small text-muted">
+                            Published by <strong>{{ poll.created_by.username }}</strong> on {{ poll.created_at|date:'d M Y' }}
+                        </p>
+                        <p class="mb-3">
+                            <strong>{{ poll.total_votes }} votes</strong> cast
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'poll_detail' poll.id %}" class="btn btn-outline-success btn-sm">
+                                <i class="bi bi-arrow-right-circle"></i> View & Vote
+                            </a>
+                            {% if poll.id in voted_poll_ids %}
+                                <span class="badge bg-info">You voted</span>
+                            {% else %}
+                                <span class="badge bg-warning">Not voted yet</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="card text-center">
+                <div class="card-body py-5">
+                    <i class="bi bi-inbox" style="font-size: 3rem; color: var(--soft-brown);"></i>
+                    <p class="text-muted mt-3">No polls are available right now. Check back later.</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'hostel/base.html' %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <a href="{% url 'poll_list' %}" class="btn btn-outline-secondary btn-sm mb-3">
+            <i class="bi bi-arrow-left"></i> Back to Polls
+        </a>
+        <h2><i class="bi bi-bar-chart-line"></i> {{ poll.title }}</h2>
+        <p class="text-muted">{{ poll.description }}</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Choose an option</h5>
+                <form method="post" action="{% url 'vote_poll' poll.id %}">
+                    {% csrf_token %}
+                    <div class="list-group mb-4">
+                        {% for option in options %}
+                            <label class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <input class="form-check-input me-2" type="radio" name="option" value="{{ option.id }}" {% if user_vote and user_vote.option.id == option.id %}checked{% endif %}>
+                                    {{ option.option_text }}
+                                </div>
+                                <span class="badge bg-success">{{ option.vote_count }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-hand-thumbs-up"></i> Submit Vote
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6>Poll Details</h6>
+                <p>
+                    <strong>Type:</strong>
+                    {% if poll.is_admin_poll %}
+                        Admin Poll
+                    {% else %}
+                        Tenant Poll
+                    {% endif %}
+                </p>
+                <p><strong>Created by:</strong> {{ poll.created_by.username }}</p>
+                <p><strong>Total votes:</strong> {{ poll.total_votes }}</p>
+                {% if user_vote %}
+                    <p><strong>Your selection:</strong> {{ user_vote.option.option_text }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

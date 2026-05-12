@@ -1,0 +1,105 @@
+{% extends 'hostel/base.html' %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-credit-card"></i> My Payments</h2>
+        <p class="text-muted">Track your fee records and payment status.</p>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <h6>Total Amount</h6>
+            <div class="display-6">₹{{ total_amount|floatformat:0 }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card" style="background: linear-gradient(135deg, #7ab8a8, #6a9f8f);">
+            <h6>Total Paid</h6>
+            <div class="display-6">₹{{ total_paid|floatformat:0 }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card" style="background: linear-gradient(135deg, #c85c5c, #b84848);">
+            <h6>Remaining Balance</h6>
+            <div class="display-6">₹{{ remaining_total|floatformat:0 }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Payments Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if payments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Due Date</th>
+                                    <th>Total Amount (₹)</th>
+                                    <th>Amount Paid (₹)</th>
+                                    <th>Remaining (₹)</th>
+                                    <th>Status</th>
+                                    <th>Transaction ID</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                    <tr>
+                                        <td><strong>{{ payment.due_date }}</strong></td>
+                                        <td>₹{{ payment.amount|floatformat:0 }}</td>
+                                        <td>₹{{ payment.paid_amount|floatformat:0 }}</td>
+                                        <td>
+                                            {% if payment.get_remaining_amount <= 0 %}
+                                                <span class="badge bg-success">₹0 - Paid</span>
+                                            {% else %}
+                                                <strong>₹{{ payment.get_remaining_amount|floatformat:0 }}</strong>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if payment.get_remaining_amount <= 0 %}
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-check-circle"></i> Fully Paid
+                                                </span>
+                                            {% elif payment.paid_amount > 0 %}
+                                                <span class="badge bg-info">
+                                                    <i class="bi bi-hourglass-split"></i> Partial
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-danger">
+                                                    <i class="bi bi-exclamation-circle"></i> Pending
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if payment.transaction_id %}
+                                                <code class="small">{{ payment.transaction_id }}</code>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox" style="font-size: 3rem; color: var(--soft-brown);"></i>
+                        <p class="text-muted mt-3">No payment records found. Contact admin if you believe this is incorrect.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert-info mt-4">
+    <i class="bi bi-info-circle"></i> 
+    <strong>Payment Instructions:</strong> Contact the hostel admin at the office to make your payments. Ensure you provide the transaction ID for record-keeping.
+</div>
+{% endblock %}

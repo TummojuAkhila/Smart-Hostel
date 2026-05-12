@@ -1,0 +1,185 @@
+{% extends 'hostel/base.html' %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="bi bi-credit-card"></i> Payment Management</h2>
+                <p class="text-muted">Track and update all hostel fee payments.</p>
+            </div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
+                <i class="bi bi-plus-circle"></i> Add Payment Record
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Payment Modal -->
+<div class="modal fade" id="addPaymentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Payment Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="paymentForm">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tenant *</label>
+                            {{ form.user }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Due Date *</label>
+                            {{ form.due_date }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Total Amount (₹) *</label>
+                            {{ form.amount }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Amount Paid (₹)</label>
+                            {{ form.paid_amount }}
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info" id="remainingAlert">
+                        <strong>Remaining Balance:</strong> <span id="remainingAmount">₹0</span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Transaction ID</label>
+                            {{ form.transaction_id }}
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" id="paid" name="paid" value="on">
+                                <label class="form-check-label" for="paid">
+                                    Mark as Fully Paid
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer mt-4">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Payment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payments Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if payments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tenant Name</th>
+                                    <th>Total Fee (₹)</th>
+                                    <th>Amount Paid (₹)</th>
+                                    <th>Remaining (₹)</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                    <th>Transaction ID</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ payment.user.username }}</strong><br>
+                                            <small class="text-muted">{{ payment.user.first_name }} {{ payment.user.last_name }}</small>
+                                        </td>
+                                        <td><strong>₹{{ payment.amount|floatformat:0 }}</strong></td>
+                                        <td>₹{{ payment.paid_amount|floatformat:0 }}</td>
+                                        <td>
+                                            {% if payment.get_remaining_amount <= 0 %}
+                                                <span class="badge bg-success">₹0 (Paid)</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">₹{{ payment.get_remaining_amount|floatformat:0 }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ payment.due_date }}</td>
+                                        <td>
+                                            {% if payment.get_remaining_amount <= 0 %}
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-check-circle"></i> Fully Paid
+                                                </span>
+                                            {% elif payment.paid_amount > 0 %}
+                                                <span class="badge bg-info">
+                                                    <i class="bi bi-hourglass-split"></i> Partial
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-danger">
+                                                    <i class="bi bi-exclamation-circle"></i> Pending
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if payment.transaction_id %}
+                                                <code>{{ payment.transaction_id }}</code>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'update_payment' payment.id %}" class="btn btn-sm btn-warning" title="Edit">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a>
+                                            <form method="post" action="{% url 'delete_payment' payment.id %}" style="display:inline;" onsubmit="return confirm('Delete this payment record?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox" style="font-size: 3rem; color: var(--soft-brown);"></i>
+                        <p class="text-muted mt-3">No payment records yet. Click "Add Payment Record" to create one.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-calculate remaining amount
+    document.addEventListener('DOMContentLoaded', function() {
+        const amountInput = document.querySelector('[name="amount"]');
+        const paidInput = document.querySelector('[name="paid_amount"]');
+        const remainingSpan = document.getElementById('remainingAmount');
+
+        function updateRemaining() {
+            const total = parseFloat(amountInput.value) || 0;
+            const paid = parseFloat(paidInput.value) || 0;
+            const remaining = total - paid;
+            remainingSpan.textContent = '₹' + Math.max(0, remaining).toFixed(0);
+        }
+
+        if (amountInput && paidInput) {
+            amountInput.addEventListener('input', updateRemaining);
+            paidInput.addEventListener('input', updateRemaining);
+        }
+    });
+</script>
+{% endblock %}

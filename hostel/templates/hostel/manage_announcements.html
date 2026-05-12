@@ -1,0 +1,100 @@
+{% extends 'hostel/base.html' %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-megaphone"></i> Manage Announcements</h2>
+        <p class="text-muted">Create and manage hostel announcements visible to all tenants.</p>
+    </div>
+</div>
+
+<!-- Two-Column Layout -->
+<div class="row">
+    <!-- Add New Announcement Form (Left) -->
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-plus-circle"></i> New Announcement</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Title *</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback">{{ form.title.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Message *</label>
+                        {{ form.message }}
+                        {% if form.message.errors %}
+                            <div class="invalid-feedback">{{ form.message.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-check mb-3">
+                        {{ form.active }}
+                        <label class="form-check-label">
+                            Publish immediately
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-send"></i> Create Announcement
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcements List (Right) -->
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-list-check"></i> All Announcements</h5>
+                {% if announcements %}
+                    <div class="list-group">
+                        {% for announcement in announcements %}
+                            <div class="list-group-item list-group-item-action">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1"><strong>{{ announcement.title }}</strong></h6>
+                                        <p class="mb-2 small">{{ announcement.message|truncatewords:20 }}</p>
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar"></i> {{ announcement.created_at|date:'d M Y, H:i' }}
+                                        </small>
+                                    </div>
+                                    <div class="btn-group btn-group-sm ms-2">
+                                        {% if announcement.active %}
+                                            <span class="badge bg-success me-2">
+                                                <i class="bi bi-eye"></i> Active
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary me-2">
+                                                <i class="bi bi-eye-slash"></i> Inactive
+                                            </span>
+                                        {% endif %}
+                                        <a href="{% url 'update_announcement' announcement.id %}" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Edit announcement">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'delete_announcement' announcement.id %}" class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Delete announcement">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox" style="font-size: 2rem; color: var(--soft-brown);"></i>
+                        <p class="text-muted mt-2">No announcements yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

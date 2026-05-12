@@ -1,0 +1,175 @@
+{% extends 'hostel/base.html' %}
+{% block content %}
+<div class="row gy-4">
+    <div class="col-12">
+        <h2>Tenant Dashboard</h2>
+        <p class="text-muted">Your room, payments, complaints, and hostel updates at a glance.</p>
+    </div>
+    
+    <!-- Assigned Room -->
+    <div class="col-md-6">
+        <div class="card h-100 {% if assigned_rooms %}border-success border-3{% endif %}">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-door-closed"></i> Assigned Room
+                </h5>
+                {% if assigned_rooms %}
+                    {% for room in assigned_rooms %}
+                        <div class="room-details mb-3">
+                            <div class="mb-3">
+                                <h6 class="text-success mb-2"><strong>Room {{ room.number }}</strong></h6>
+                                <div class="row g-2 text-sm">
+                                    <div class="col-6">
+                                        <small class="text-muted">Type:</small><br>
+                                        <strong>{{ room.get_room_type_display }}</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Capacity:</small><br>
+                                        <strong>{{ room.capacity }} {{ room.capacity|pluralize:"person,persons" }}</strong>
+                                    </div>
+                                </div>
+                                <div class="row g-2 text-sm mt-2">
+                                    <div class="col-6">
+                                        <small class="text-muted">Monthly Fee:</small><br>
+                                        <strong class="text-primary">₹{{ room.price }}/month</strong>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Status:</small><br>
+                                        <span class="badge bg-{{ room.is_available|yesno:'success,warning' }}">
+                                            {{ room.is_available|yesno:'Available,Maintenance' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <a href="{% url 'rooms' %}" class="btn btn-sm btn-outline-primary mt-2">View All Rooms</a>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <p class="mb-0"><strong>No room allocated yet.</strong> Please contact the admin for room assignment.</p>
+                    </div>
+                    <a href="{% url 'rooms' %}" class="btn btn-sm btn-outline-secondary mt-2">View Available Rooms</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Payments -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Fees to be Paid</h5>
+                {% if upcoming_payments %}
+                    <ul class="list-group list-group-flush">
+                        {% for payment in upcoming_payments %}
+                            <li class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>₹{{ payment.get_remaining_amount|floatformat:0 }}</strong> remaining<br>
+                                    <small class="text-muted">Paid: ₹{{ payment.paid_amount|floatformat:0 }} · Total: ₹{{ payment.amount|floatformat:0 }}</small><br>
+                                    <small class="text-muted">Due: {{ payment.due_date }}</small>
+                                </div>
+                                <span class="badge bg-{{ payment.paid|yesno:'success,warning' }} align-self-center">
+                                    {% if payment.paid %}
+                                        Fully Paid
+                                    {% elif payment.paid_amount > 0 %}
+                                        Partial
+                                    {% else %}
+                                        Pending
+                                    {% endif %}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-success"><strong>✓ All payments are up to date!</strong></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-12">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">Raise Complaint</h5>
+                        <p class="card-text">Report any issues or concerns.</p>
+                        <a href="{% url 'complaints' %}" class="btn btn-sm btn-warning">New Complaint</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">Visitor Request</h5>
+                        <p class="card-text">Request visitor approval.</p>
+                        <a href="{% url 'visitor_request' %}" class="btn btn-sm btn-info">Request Visitor</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">Payments</h5>
+                        <p class="card-text">View payment history.</p>
+                        <a href="{% url 'payments' %}" class="btn btn-sm btn-success">View Payments</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">Food Menu</h5>
+                        <p class="card-text">Check daily meals.</p>
+                        <a href="{% url 'view_food_menu' %}" class="btn btn-sm btn-danger">View Menu</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcements -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Latest Announcements</h5>
+                <ul class="list-group list-group-flush">
+                    {% for announcement in active_announcements %}
+                        <li class="list-group-item">
+                            <strong>{{ announcement.title }}</strong><br>
+                            <small class="text-muted">{{ announcement.message|truncatechars:80 }}</small>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-muted">No announcements available.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Food Menu -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">📋 Food Menu</h5>
+                {% if today_food %}
+                    <ul class="list-group list-group-flush">
+                        {% for food in today_food %}
+                            <li class="list-group-item">
+                                <strong>{{ food.get_meal_type_display }}</strong> - {{ food.dish_name }}<br>
+                                <small class="text-muted">{{ food.date }}</small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="mt-2">
+                        <a href="{% url 'view_food_menu' %}" class="btn btn-sm btn-outline-danger">View Full Menu</a>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No food menu available yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

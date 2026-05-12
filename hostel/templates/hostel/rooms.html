@@ -1,0 +1,66 @@
+{% extends 'hostel/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2>Rooms</h2>
+                <p class="text-muted">Review room availability, pricing, and allocation.</p>
+            </div>
+            {% if user.is_staff %}
+                <a href="{% url 'manage_rooms' %}" class="btn btn-primary">Manage Rooms</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="row">
+    {% for room in rooms %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 {% if room.assigned_to %}border-success{% endif %}">
+                <div class="card-body">
+                    <h5 class="card-title">Room {{ room.number }}</h5>
+                    <p class="card-text">
+                        <strong>Type:</strong> {{ room.get_room_type_display }}<br>
+                        <strong>Capacity:</strong> {{ room.capacity }} {{ room.capacity|pluralize:"person,persons" }}<br>
+                        <strong>Price:</strong> ₹{{ room.price }}/month
+                    </p>
+                    
+                    <!-- Availability Badge -->
+                    <div class="mb-2">
+                        <span class="badge bg-{{ room.is_available|yesno:'success,danger' }}">
+                            {{ room.is_available|yesno:'Available,Occupied' }}
+                        </span>
+                    </div>
+
+                    <!-- Assignment Info -->
+                    {% if room.assigned_to %}
+                        <div class="alert alert-success alert-sm p-2 mb-2">
+                            <small>
+                                <strong>Assigned to:</strong><br>
+                                {{ room.assigned_to.username }}<br>
+                                {{ room.assigned_to.first_name }} {{ room.assigned_to.last_name }}
+                            </small>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning alert-sm p-2 mb-2">
+                            <small><strong>Unassigned</strong></small>
+                        </div>
+                    {% endif %}
+
+                    <!-- Admin Actions -->
+                    {% if user.is_staff %}
+                        <div class="btn-group w-100 mt-3" role="group">
+                            <a href="{% url 'allocate_room' room.id %}" class="btn btn-sm btn-outline-primary">Allocate</a>
+                            <a href="{% url 'update_room' room.id %}" class="btn btn-sm btn-outline-warning">Edit</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <p class="text-muted">No rooms available yet.</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

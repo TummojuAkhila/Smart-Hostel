@@ -1,0 +1,15 @@
+body {
+    background: radial-gradient(circle at top, #f3f8ff 0%, #f8fafc 35%, #f8fafc 100%);
+}
+.card {
+    border-radius: 1rem;
+}
+.navbar-brand {
+    font-weight: 700;
+}
+.btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.7);
+}
+.alert {
+    border-radius: 0.85rem;
+}

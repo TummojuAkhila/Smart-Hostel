@@ -1,0 +1,186 @@
+{% extends 'hostel/base.html' %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-people"></i> Visitor Management</h2>
+        <p class="text-muted">
+            {% if user.is_staff %}
+                Review and approve pending visitor requests from tenants.
+            {% else %}
+                Submit visitor requests and track approvals.
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+{% if not user.is_staff %}
+    <!-- Tenant: Submit New Visitor Request -->
+    <div class="row mb-4">
+        <div class="col-lg-5">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-plus-circle"></i> Request New Visitor</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Visitor Name *</label>
+                            {{ form.visitor_name }}
+                            {% if form.visitor_name.errors %}
+                                <div class="invalid-feedback">{{ form.visitor_name.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Visit Date *</label>
+                            {{ form.visit_date }}
+                            {% if form.visit_date.errors %}
+                                <div class="invalid-feedback">{{ form.visit_date.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Purpose of Visit *</label>
+                            {{ form.purpose }}
+                            {% if form.purpose.errors %}
+                                <div class="invalid-feedback">{{ form.purpose.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-send"></i> Submit Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tenant: Request History -->
+        <div class="col-lg-7">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-list-check"></i> Your Requests</h5>
+                    {% if visitors %}
+                        <div class="list-group">
+                            {% for visitor in visitors %}
+                                <div class="list-group-item list-group-item-action" data-bs-toggle="tooltip" title="Submitted on {{ visitor.created_at|date:'d M Y' }}">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1"><strong>{{ visitor.visitor_name }}</strong></h6>
+                                            <p class="mb-1">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-calendar-event"></i> {{ visitor.visit_date }}<br>
+                                                    <i class="bi bi-chat"></i> {{ visitor.purpose }}
+                                                </small>
+                                            </p>
+                                        </div>
+                                        {% if visitor.approved %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> Approved
+                                            </span>
+                                        {% elif visitor.rejected %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle"></i> Rejected
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-hourglass-split"></i> Pending
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-inbox" style="font-size: 2rem; color: var(--soft-brown);"></i>
+                            <p class="text-muted mt-2">No visitor requests yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% else %}
+    <!-- Admin: Visitor Requests Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if visitors %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Tenant</th>
+                                        <th>Visitor Name</th>
+                                        <th>Visit Date</th>
+                                        <th>Purpose</th>
+                                        <th>Requested On</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for visitor in visitors %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ visitor.user.username }}</strong><br>
+                                                <small class="text-muted">{{ visitor.user.first_name }} {{ visitor.user.last_name }}</small>
+                                            </td>
+                                            <td>{{ visitor.visitor_name }}</td>
+                                            <td><strong>{{ visitor.visit_date }}</strong></td>
+                                            <td>
+                                                <small>{{ visitor.purpose|truncatewords:5 }}</small>
+                                            </td>
+                                            <td>{{ visitor.created_at|date:"d M Y" }}</td>
+                                            <td>
+                                                {% if visitor.approved %}
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle"></i> Approved
+                                                    </span>
+                                                {% elif visitor.rejected %}
+                                                    <span class="badge bg-danger">
+                                                        <i class="bi bi-x-circle"></i> Rejected
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-warning">
+                                                        <i class="bi bi-hourglass-split"></i> Pending
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if not visitor.approved and not visitor.rejected %}
+                                                    <div class="btn-group" role="group">
+                                                        <a href="{% url 'approve_visitor' visitor.id %}" class="btn btn-sm btn-success">
+                                                            <i class="bi bi-check"></i> Approve
+                                                        </a>
+                                                        <a href="{% url 'delete_visitor' visitor.id %}" class="btn btn-sm btn-danger">
+                                                            <i class="bi bi-x"></i> Reject
+                                                        </a>
+                                                    </div>
+                                                {% elif visitor.approved %}
+                                                    <span class="text-muted">Approved</span>
+                                                {% else %}
+                                                    <span class="text-muted">Rejected</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox" style="font-size: 3rem; color: var(--soft-brown);"></i>
+                            <p class="text-muted mt-3">No visitor requests yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

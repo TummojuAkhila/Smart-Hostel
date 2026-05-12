@@ -1,0 +1,30 @@
+{% extends 'hostel/base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h2>Allocate Room</h2>
+                <p class="text-muted">Assign room {{ room.number }} to a tenant.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Room</label>
+                        <input class="form-control" value="{{ room.number }} - {{ room.get_room_type_display }}" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tenant Username</label>
+                        <select class="form-select" name="username" required>
+                            <option value="">Choose tenant</option>
+                            {% for tenant in tenants %}
+                                <option value="{{ tenant.username }}">{{ tenant.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn btn-success">Allocate</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

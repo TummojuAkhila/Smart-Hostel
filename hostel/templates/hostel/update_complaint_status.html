@@ -1,0 +1,28 @@
+{% extends 'hostel/base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h2>Update Complaint Status</h2>
+                <div class="alert alert-info mb-3">
+                    <strong>Complaint:</strong> {{ complaint.subject }}<br>
+                    <strong>Tenant:</strong> {{ complaint.user.username }}<br>
+                    <strong>Message:</strong> {{ complaint.message }}
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+                    <div class="mb-3">
+                        {{ form.status.label_tag }}
+                        {{ form.status }}
+                        {{ form.status.errors }}
+                    </div>
+                    <button class="btn btn-success w-100">Update Status</button>
+                    <a href="{% url 'manage_complaints' %}" class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

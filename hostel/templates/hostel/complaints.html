@@ -1,0 +1,128 @@
+{% extends 'hostel/base.html' %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+        <div>
+            <h2><i class="bi bi-exclamation-triangle"></i> Complaint Management</h2>
+            <p class="text-muted">Submit complaints and track their resolution status.</p>
+        </div>
+        <div>
+            <a href="{% url 'poll_list' %}" class="btn btn-outline-success">
+                <i class="bi bi-bar-chart-line"></i> Polls
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Status Filter Buttons (Universal) -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-success" onclick="window.sortComplaints('all')">
+                <i class="bi bi-funnel"></i> All
+            </button>
+            <button type="button" class="btn btn-outline-warning" onclick="window.sortComplaints('open')">
+                <i class="bi bi-circle-fill"></i> Open
+            </button>
+            <button type="button" class="btn btn-outline-info" onclick="window.sortComplaints('in_progress')">
+                <i class="bi bi-arrow-repeat"></i> In Progress
+            </button>
+            <button type="button" class="btn btn-outline-success" onclick="window.sortComplaints('resolved')">
+                <i class="bi bi-check-circle"></i> Resolved
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Two-Column Layout -->
+<div class="row">
+    <!-- New Complaint Form (Left) -->
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-pencil-square"></i> Report a Complaint</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Subject *</label>
+                        {{ form.subject }}
+                        {% if form.subject.errors %}
+                            <div class="invalid-feedback">{{ form.subject.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Details *</label>
+                        {{ form.message }}
+                        {% if form.message.errors %}
+                            <div class="invalid-feedback">{{ form.message.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button class="btn btn-primary w-100">
+                        <i class="bi bi-send"></i> Submit Complaint
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complaints List (Right) -->
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-list-check"></i> Complaint History</h5>
+                {% if complaints %}
+                    <div class="list-group">
+                        {% for complaint in complaints %}
+                            <div class="list-group-item list-group-item-action" data-complaint-status="{{ complaint.status }}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1"><strong>{{ complaint.subject }}</strong></h6>
+                                        <p class="mb-1 small text-muted">
+                                            <i class="bi bi-chat"></i> {{ complaint.message|truncatewords:15 }}
+                                        </p>
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar"></i> {{ complaint.created_at|date:"d M Y, H:i" }}
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-{{ complaint.status|default:'secondary' }} ms-2">
+                                        {% if complaint.status == 'open' %}
+                                            <i class="bi bi-circle-fill"></i> Open
+                                        {% elif complaint.status == 'in_progress' %}
+                                            <i class="bi bi-arrow-repeat"></i> In Progress
+                                        {% elif complaint.status == 'resolved' %}
+                                            <i class="bi bi-check-circle"></i> Resolved
+                                        {% else %}
+                                            {{ complaint.get_status_display }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                {% if complaint.resolution %}
+                                    <div class="mt-2 p-2" style="background: #f8f9fa; border-left: 3px solid var(--forest-green); border-radius: 4px;">
+                                        <small><strong>Resolution:</strong> {{ complaint.resolution }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox" style="font-size: 2rem; color: var(--soft-brown);"></i>
+                        <p class="text-muted mt-2">No complaints submitted yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.is_staff %}
+    <div class="alert alert-info mt-4">
+        <i class="bi bi-info-circle"></i> 
+        <strong>Admin Note:</strong> Click "Manage Complaints" in the admin menu to review and update complaint statuses.
+    </div>
+{% endif %}
+{% endblock %}

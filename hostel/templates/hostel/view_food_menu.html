@@ -1,0 +1,147 @@
+{% extends 'hostel/base.html' %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="bi bi-egg-fried"></i> Food Menu</h2>
+        <p class="text-muted">View daily meals and special dishes available at the hostel.</p>
+    </div>
+</div>
+
+<!-- Date Filter Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-calendar-event"></i> <strong>Select Date</strong></label>
+                        <input type="date" id="menuDate" class="form-control" onchange="window.filterMenuByDay(this.value)">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label"><i class="bi bi-funnel"></i> <strong>Filter by Meal</strong></label>
+                        <select class="form-select" onchange="filterByMealType(this.value)">
+                            <option value="">All Meal Types</option>
+                            <option value="breakfast">Breakfast</option>
+                            <option value="lunch">Lunch</option>
+                            <option value="dinner">Dinner</option>
+                            <option value="snacks">Snacks</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Menu Items Display -->
+<div class="row">
+    <div class="col-12">
+        {% if food_items %}
+            {% regroup food_items by food_date as meals_by_date %}
+            {% for date_group in meals_by_date %}
+                <div class="mb-4" data-menu-date="{{ date_group.grouper|date:'Y-m-d' }}">
+                    <div class="d-flex align-items-center mb-3">
+                        <h4 class="mb-0" style="color: var(--forest-green);">
+                            <i class="bi bi-calendar-check"></i> 
+                            {{ date_group.grouper|date:"l, d M Y" }}
+                        </h4>
+                    </div>
+
+                    <!-- Regroup by Meal Type -->
+                    {% regroup date_group.list by get_meal_type_display as meals_by_type %}
+                    <div class="row g-3">
+                        {% for meal_group in meals_by_type %}
+                            <div class="col-md-6 col-lg-6">
+                                <div class="card h-100" data-meal-type="{{ meal_group.grouper|lower }}">
+                                    <div class="card-header" style="background: linear-gradient(135deg, var(--olive-green), var(--forest-green)); color: white;">
+                                        <h5 class="mb-0">
+                                            {% if meal_group.grouper == 'Breakfast' %}
+                                                <i class="bi bi-sunrise"></i> Breakfast
+                                            {% elif meal_group.grouper == 'Lunch' %}
+                                                <i class="bi bi-sun"></i> Lunch
+                                            {% elif meal_group.grouper == 'Dinner' %}
+                                                <i class="bi bi-moon"></i> Dinner
+                                            {% else %}
+                                                <i class="bi bi-cup"></i> {{ meal_group.grouper }}
+                                            {% endif %}
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="list-group list-group-flush">
+                                            {% for food in meal_group.list %}
+                                                <div class="list-group-item ps-0">
+                                                    <div class="d-flex align-items-start">
+                                                        <div class="badge bg-success me-2 mt-1">
+                                                            <i class="bi bi-check-circle"></i>
+                                                        </div>
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="mb-1"><strong>{{ food.dish_name }}</strong></h6>
+                                                            {% if food.description %}
+                                                                <small class="text-muted d-block">{{ food.description }}</small>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Empty State for No Data on Selected Date -->
+            <div id="emptyState" class="text-center py-5" style="display: none;">
+                <i class="bi bi-calendar-x" style="font-size: 3rem; color: var(--soft-brown);"></i>
+                <p class="text-muted mt-3">No menu items available for the selected date.</p>
+            </div>
+
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 
+                    <strong>No food menu available yet.</strong> Contact the admin to add menu items.
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    function filterByMealType(mealType) {
+        const cards = document.querySelectorAll('[data-meal-type]');
+        const menus = document.querySelectorAll('[data-menu-date]');
+        
+        if (mealType === '') {
+            // Show all
+            cards.forEach(card => card.parentElement.style.display = 'block');
+            menus.forEach(menu => menu.style.display = 'block');
+        } else {
+            let anyVisible = false;
+            cards.forEach(card => {
+                if (card.getAttribute('data-meal-type') === mealType.toLowerCase()) {
+                    card.parentElement.style.display = 'block';
+                    anyVisible = true;
+                } else {
+                    card.parentElement.style.display = 'none';
+                }
+            });
+
+            // Hide menu sections with no visible cards
+            menus.forEach(menu => {
+                const visibleCards = menu.querySelectorAll('[data-meal-type]:not([style*="display: none"])');
+                menu.style.display = visibleCards.length > 0 ? 'block' : 'none';
+            });
+        }
+    }
+
+    // Initialize date input with today's date
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('menuDate').value = today;
+        window.filterMenuByDay(today);
+    });
+</script>
+{% endblock %}

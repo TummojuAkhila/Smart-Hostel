@@ -1,0 +1,70 @@
+{% extends 'hostel/base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <div class="mb-4">
+                    <h2>Edit Room {{ room.number }}</h2>
+                    <p class="text-muted">Update room details and allocation.</p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Room Number *</label>
+                            {{ form.number }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Room Type *</label>
+                            {{ form.room_type }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Capacity *</label>
+                            {{ form.capacity }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Monthly Price (₹) *</label>
+                            {{ form.price }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Assign to Tenant</label>
+                            {{ form.assigned_to }}
+                            <small class="text-muted d-block mt-1">Currently: <strong>{% if room.assigned_to %}{{ room.assigned_to.username }}{% else %}Unassigned{% endif %}</strong></small>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" id="available" name="is_available" value="on" {% if room.is_available %}checked{% endif %}>
+                                <label class="form-check-label" for="available">
+                                    Available
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-3">
+                        <strong>Current Status:</strong> 
+                        {% if room.is_available %}
+                            <span class="badge bg-success">Available</span>
+                        {% else %}
+                            <span class="badge bg-danger">Occupied</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <a href="{% url 'manage_rooms' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

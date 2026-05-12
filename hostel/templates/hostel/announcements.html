@@ -1,0 +1,24 @@
+{% extends 'hostel/base.html' %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>Announcements</h2>
+        <p class="text-muted">Stay informed about hostel notices and alerts.</p>
+    </div>
+</div>
+<div class="row">
+    {% for announcement in announcements %}
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5>{{ announcement.title }}</h5>
+                    <p>{{ announcement.message }}</p>
+                    <small class="text-muted">Published on {{ announcement.created_at|date:'M d, Y' }}</small>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12"><p class="text-muted">No announcements available.</p></div>
+    {% endfor %}
+</div>
+{% endblock %}
