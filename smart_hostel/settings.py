@@ -3,9 +3,11 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-smart-hostel-secret-key"
-DEBUG = True
-ALLOWED_HOSTS = ["*"]
+SECRET_KEY = os.environ.get("SECRET_KEY")
+
+DEBUG = os.environ.get("DEBUG") == "True"
+
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(",")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
