@@ -1,11 +1,13 @@
 import os
 from pathlib import Path
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-smart-hostel-secret-key"
-DEBUG = True
-ALLOWED_HOSTS = ["*"]
+# Production Settings - Read from environment
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-smart-hostel-secret-key")
+DEBUG = os.environ.get("DEBUG", "False") == "True"
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -47,11 +49,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "smart_hostel.wsgi.application"
 
+# Database Configuration - Support PostgreSQL for production
+import dj_database_url
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -82,3 +86,13 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "login"
+
+# Security Settings for Production
+if not DEBUG:
+    SECURE_SSL_REDIRECT = False  # Set to True once SSL certificate is installed
+    SESSION_COOKIE_SECURE = False  # Set to True with SSL
+    CSRF_COOKIE_SECURE = False  # Set to True with SSL
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_SECURITY_POLICY = {
+        "default-src": ("'self'",),
+    }
