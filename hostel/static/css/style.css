@@ -1,5 +1,5 @@
 /* =========================================================
-   SMARTSTAY MODERN ECO DASHBOARD UI
+   SMART HOSTEL MODERN ECO DASHBOARD UI
    Premium Earthy Hostel Management Theme
 ========================================================= */
 
@@ -51,15 +51,21 @@ html{
    NAVBAR
 ========================= */
 .navbar{
-    background:linear-gradient(90deg,#1f3b2d,#355c41,#4d7a57);
+    background:linear-gradient(90deg,#1f3b2d,#355c41,#4d7a57) !important;
+    background-color:#1f3b2d !important;
     padding:16px 30px;
     box-shadow:0 4px 20px rgba(0,0,0,0.08);
 }
 
 .navbar-brand{
     color:white !important;
-    font-size:32px;
+    font-size:42px;
     font-weight:700;
+    letter-spacing:0.5px;
+}
+
+.navbar .nav-link{
+    color:#f7f4ea !important;
 }
 
 .nav-link{
@@ -138,7 +144,7 @@ html{
    PAGE TITLE
 ========================= */
 .page-title{
-    font-size:52px;
+    font-size:44px;
     font-weight:700;
     margin-bottom:10px;
 }
